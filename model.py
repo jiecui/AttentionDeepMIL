@@ -10,6 +10,7 @@ class Attention(nn.Module):
         self.L = 128
         self.ATTENTION_BRANCHES = 1
 
+        # embedding, LeNet5-like architecture
         self.feature_extractor_part1 = nn.Sequential(
             nn.Conv2d(1, 20, kernel_size=5),
             nn.ReLU(),
@@ -24,12 +25,14 @@ class Attention(nn.Module):
             nn.ReLU(),
         )
 
+        # attention mechanism, equation (8) in the paper Iise 2018
         self.attention = nn.Sequential(
             nn.Linear(self.M, self.L), # matrix V
-            nn.Tanh(),
+            nn.Tanh(), # tanh(Vh^T)
             nn.Linear(self.L, self.ATTENTION_BRANCHES) # matrix w (or vector w if self.ATTENTION_BRANCHES==1)
         )
 
+        # classifier, FCN
         self.classifier = nn.Sequential(
             nn.Linear(self.M*self.ATTENTION_BRANCHES, 1),
             nn.Sigmoid()
@@ -38,14 +41,17 @@ class Attention(nn.Module):
     def forward(self, x):
         x = x.squeeze(0)
 
+        # embedding
         H = self.feature_extractor_part1(x)
         H = H.view(-1, 50 * 4 * 4)
         H = self.feature_extractor_part2(H)  # KxM
 
+        # attention mechanism
         A = self.attention(H)  # KxATTENTION_BRANCHES
         A = torch.transpose(A, 1, 0)  # ATTENTION_BRANCHESxK
         A = F.softmax(A, dim=1)  # softmax over K
 
+        # equation (7) in the paper Iise 2018
         Z = torch.mm(A, H)  # ATTENTION_BRANCHESxM
 
         Y_prob = self.classifier(Z)
