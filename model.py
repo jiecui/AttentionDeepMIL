@@ -68,10 +68,10 @@ class Attention(nn.Module):
         return error, Y_hat
 
     def calculate_objective(self, X, Y):
-        Y = Y.float()
         Y_prob, _, A = self.forward(X)
-        Y_prob = torch.clamp(Y_prob, min=1e-5, max=1. - 1e-5)
-        neg_log_likelihood = -1. * (Y * torch.log(Y_prob) + (1. - Y) * torch.log(1. - Y_prob))  # negative log bernoulli
+        Y = Y.float().unsqueeze(1)  # ensure Y has the same shape as Y_prob
+        loss_fun=nn.BCELoss()
+        neg_log_likelihood = loss_fun(Y_prob, Y)
 
         return neg_log_likelihood, A
 
