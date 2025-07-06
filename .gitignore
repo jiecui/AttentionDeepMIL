@@ -1,4 +1,5 @@
 *.code-workspace
+*.code-profile
 *.bak
 *.bak.*
 *.ckpt
@@ -36,4 +37,4 @@ gcp-vscode-ssh/
 Thumbs.db
 
 # project related
-*.code-workspace
+szimp_dataset.json
