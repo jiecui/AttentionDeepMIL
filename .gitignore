@@ -39,4 +39,4 @@ Thumbs.db
 # project related
 *.code-workspace
 *.code-profile
-ad_mil/*
+.ad_mil/*
