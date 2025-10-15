@@ -26,7 +26,7 @@ class MnistBags(data_utils.Dataset):
 
     def _create_bags(self):
         if self.train:
-            loader = data_utils.DataLoader(datasets.MNIST('../datasets',
+            loader = data_utils.DataLoader(datasets.MNIST('./datasets',
                                                           train=True,
                                                           download=True,
                                                           transform=transforms.Compose([
@@ -35,7 +35,7 @@ class MnistBags(data_utils.Dataset):
                                            batch_size=self.num_in_train,
                                            shuffle=False)
         else:
-            loader = data_utils.DataLoader(datasets.MNIST('../datasets',
+            loader = data_utils.DataLoader(datasets.MNIST('./datasets',
                                                           train=False,
                                                           download=True,
                                                           transform=transforms.Compose([
