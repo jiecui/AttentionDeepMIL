@@ -66,9 +66,6 @@ class MnistBags(data_utils.Dataset):
                 shuffle=False,
             )
 
-        # for batch_data, batch_labels in loader:
-        #     all_imgs = batch_data
-        #     all_labels = batch_labels
         imgs, labels = [], []
         for batch_data, batch_labels in loader:
             imgs.append(batch_data)
