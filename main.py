@@ -18,6 +18,7 @@ import torch
 import torch.optim as optim
 import torch.utils.data as data_utils
 from torch.autograd import Variable
+from tqdm import tqdm
 from dataloader import MnistBags
 from model import Attention, GatedAttention
 
@@ -31,8 +32,8 @@ num_bags_to_display = 5  # number of bags to display results for during testing
 # Define functions
 # ==========================================================================
 def train(
-    model: Attention | GatedAttention, optimizer: torch.optim.Optimizer, epoch: int
-):
+    model: Attention | GatedAttention, optimizer: torch.optim.Optimizer
+) -> tuple[float, float]:
     model.train()
     train_loss = 0.0
     train_error = 0.0
@@ -57,11 +58,7 @@ def train(
     train_loss /= len(train_loader)
     train_error /= len(train_loader)
 
-    print(
-        "Epoch: {}, Loss: {:.4f}, Train error: {:.4f}".format(
-            epoch, train_loss, train_error
-        )
-    )
+    return train_loss, train_error
 
 
 def test(model: Attention | GatedAttention, num_bags_to_display=5):
@@ -263,8 +260,10 @@ if __name__ == "__main__":
     # train the model
     # ---------------
     print("Start Training")
-    for epoch in range(1, args.epochs + 1):
-        train(model, optimizer, epoch)
+    pbar = tqdm(range(0, args.epochs), desc="Training")
+    for epoch in pbar:
+        train_loss, train_error = train(model, optimizer)
+        pbar.set_postfix({"loss": f"{train_loss:.4f}", "error": f"{train_error:.4f}"})
 
     # test the model
     # --------------
