@@ -40,7 +40,6 @@ def train(
         bag_label = label[0]
         if args.cuda:
             data, bag_label = data.cuda(), bag_label.cuda()
-        # data, bag_label = Variable(data), Variable(bag_label)
 
         # reset gradients
         optimizer.zero_grad()
