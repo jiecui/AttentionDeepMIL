@@ -11,6 +11,7 @@
 checkpoint
 logs/*
 tf_logs/*
+lightning_logs/
 images/**/*.png
 images/**/*.dot
 my_*
@@ -32,5 +33,3 @@ Thumbs.db
 # project related
 *.code-workspace
 *.code-profile
-.ad_mil/*
-.tf2/*
