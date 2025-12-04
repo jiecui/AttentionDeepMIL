@@ -1,13 +1,22 @@
-from __future__ import print_function
+# Main script to train and test attention-based multiple instance learning models on MNIST bags
 
+# 2025 Modified by Richard J. Cui. on Thu 12/04/2025 05:40:18.272526 PM
+# $Revision: 0.1 $  $Date: Thu 12/04/2025 05:40:18.272526 PM $
+#
+# Mayo Clinic Foundation
+# Rochester, MN 55901, USA
+#
+# Email: Cui.Jie@mayo.edu
+
+# ==========================================================================
+# Import libraries
+# ==========================================================================
 import argparse
-
 import numpy as np
 import torch
 import torch.optim as optim
 import torch.utils.data as data_utils
 from torch.autograd import Variable
-
 from dataloader import MnistBags
 from model import Attention, GatedAttention
 
