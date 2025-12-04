@@ -17,10 +17,14 @@ import numpy as np
 import torch
 import torch.optim as optim
 import torch.utils.data as data_utils
+import pytorch_lightning as pl
 from torch.autograd import Variable
 from tqdm import tqdm
 from dataloader import MnistBags
-from model import Attention, GatedAttention
+
+# from model import Attention, GatedAttention
+from model import LitAttention, LitGatedAttention
+from pytorch_lightning.callbacks import ModelCheckpoint, Callback
 
 # ==========================================================================
 # Define hyperparameters
@@ -31,84 +35,6 @@ num_bags_to_display = 5  # number of bags to display results for during testing
 # ==========================================================================
 # Define functions
 # ==========================================================================
-def train(
-    model: Attention | GatedAttention, optimizer: torch.optim.Optimizer
-) -> tuple[float, float]:
-    model.train()
-    train_loss = 0.0
-    train_error = 0.0
-    for data, label in train_loader:
-        bag_label = label[0]
-        if args.cuda:
-            data, bag_label = data.cuda(), bag_label.cuda()
-
-        # reset gradients
-        optimizer.zero_grad()
-        # calculate loss and metrics
-        loss, _ = model.calculate_objective(data, bag_label)
-        train_loss += loss.data[0].item()
-        error, _ = model.calculate_classification_error(data, bag_label)
-        train_error += error
-        # backward pass
-        loss.backward()
-        # step
-        optimizer.step()
-
-    # calculate loss and error for epoch
-    train_loss /= len(train_loader)
-    train_error /= len(train_loader)
-
-    return train_loss, train_error
-
-
-def test(model: Attention | GatedAttention, num_bags_to_display=5):
-    model.eval()
-    test_loss = 0.0
-    test_error = 0.0
-
-    with torch.no_grad():
-        for batch_idx, (data, label) in enumerate(test_loader):
-            bag_label = label[0]
-            instance_labels = label[1]
-            if args.cuda:
-                data, bag_label = data.cuda(), bag_label.cuda()
-            data, bag_label = Variable(data), Variable(bag_label)
-            loss, attention_weights = model.calculate_objective(data, bag_label)
-            test_loss += loss.data[0].item()
-            error, predicted_label = model.calculate_classification_error(
-                data, bag_label
-            )
-            test_error += error
-
-            if (
-                batch_idx < num_bags_to_display
-            ):  # plot bag labels and instance labels for first 5 bags
-                bag_level = (
-                    bag_label.cpu().data.numpy()[0],
-                    int(predicted_label.cpu().data.numpy()[0][0]),
-                )
-                instance_level = list(
-                    zip(
-                        instance_labels.numpy()[0].tolist(),
-                        np.round(
-                            attention_weights.cpu().data.numpy()[0], decimals=3
-                        ).tolist(),
-                    )
-                )
-
-                print(
-                    "\nTrue Bag Label, Predicted Bag Label: {}\n"
-                    "True Instance Labels, Attention Weights: {}".format(
-                        bag_level, instance_level
-                    )
-                )
-
-    test_error /= len(test_loader)
-    test_loss /= len(test_loader)
-
-    print("\nTest Set, Loss: {:.4f}, Test error: {:.4f}".format(test_loss, test_error))
-
-
 if __name__ == "__main__":
     # define command-line arguments
     # -----------------------------
@@ -170,7 +96,7 @@ if __name__ == "__main__":
         type=int,
         default=1,
         metavar="NCPU",
-        help="number of cpu workers. if < 1, set to half of available CPUs",
+        help="number of cpu workers. if < 1, set to all of available CPUs",
     )
     parser.add_argument(
         "--seed", type=int, default=1, metavar="S", help="random seed (default: 1)"
@@ -200,7 +126,7 @@ if __name__ == "__main__":
         num_workers = args.num_cpu_workers
     else:
         cpu_count = os.cpu_count()
-        num_workers = max(1, cpu_count // 2) if cpu_count else 1
+        num_workers = max(1, cpu_count) if cpu_count else 1
     print(f"Using {num_workers} CPU workers for data loading\n")
 
     # setup datasets
@@ -221,6 +147,7 @@ if __name__ == "__main__":
         ),
         batch_size=1,
         shuffle=True,
+        persistent_workers=True,
         **loader_kwargs,
     )
     # * data loader of testing set
@@ -235,6 +162,7 @@ if __name__ == "__main__":
         ),
         batch_size=1,
         shuffle=False,
+        persistent_workers=True,
         **loader_kwargs,
     )
 
@@ -242,16 +170,13 @@ if __name__ == "__main__":
     # ------------------------------
     print("Init Model")
     if args.model == "attention":
-        model = Attention()
+        model = LitAttention()
     elif args.model == "gated_attention":
-        model = GatedAttention()
+        model = LitGatedAttention()
     else:
         raise ValueError(
             f"Unknown model type: {args.model}. Choose 'attention' or 'gated_attention'"
         )
-
-    if args.cuda:
-        model.cuda()
 
     optimizer = optim.Adam(
         model.parameters(), lr=args.lr, betas=(0.9, 0.999), weight_decay=args.reg
@@ -260,14 +185,25 @@ if __name__ == "__main__":
     # train the model
     # ---------------
     print("Start Training")
-    pbar = tqdm(range(0, args.epochs), desc="Training")
-    for epoch in pbar:
-        train_loss, train_error = train(model, optimizer)
-        pbar.set_postfix({"loss": f"{train_loss:.4f}", "error": f"{train_error:.4f}"})
+    callbacks: list[Callback] = [
+        ModelCheckpoint(
+            dirpath="./chpt",
+            monitor="train_loss",
+            filename="admil",
+        )
+    ]
+    trainer = pl.Trainer(
+        max_epochs=args.epochs,
+        accelerator="gpu" if args.cuda else "cpu",
+        devices=1 if args.cuda else 1,
+        callbacks=callbacks,
+    )
+    trainer.fit(model, train_loader)
 
     # test the model
     # --------------
-    print(f"Start Testing (showing results for first {num_bags_to_display} bags)")
-    test(model, num_bags_to_display)
+    print(f"Start Testing")
+    # test(model, num_bags_to_display)
+    trainer.test(model, test_loader)
 
     # [EOF]
