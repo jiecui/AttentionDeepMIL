@@ -187,6 +187,12 @@ if __name__ == "__main__":
         default="attention",
         help="Choose b/w attention and gated_attention",
     )
+    parser.add_argument(
+        "--no_validation",
+        action="store_true",
+        default=False,
+        help="do validation or not",
+    )
 
     args = parser.parse_args()
     args.cuda = not args.no_cuda and torch.cuda.is_available()
@@ -225,6 +231,21 @@ if __name__ == "__main__":
         persistent_workers=True,
         **loader_kwargs,
     )
+    # * data loader of validation set
+    val_loader = data_utils.DataLoader(
+        MnistBags(
+            target_number=args.target_number,
+            mean_bag_length=args.mean_bag_length,
+            var_bag_length=args.var_bag_length,
+            num_bag=args.num_bags_train,
+            seed=args.seed,
+            train=True,
+        ),
+        batch_size=1,
+        shuffle=False,
+        persistent_workers=True,
+        **loader_kwargs,
+    )
     # * data loader of testing set
     test_loader = data_utils.DataLoader(
         MnistBags(
@@ -245,9 +266,9 @@ if __name__ == "__main__":
     # ------------------------------
     print("Init Model")
     if args.model == "attention":
-        model = LitAttention()
+        model = LitAttention(no_validation=args.no_validation)
     elif args.model == "gated_attention":
-        model = LitGatedAttention()
+        model = LitGatedAttention(no_validation=args.no_validation)
     else:
         raise ValueError(
             f"Unknown model type: {args.model}. Choose 'attention' or 'gated_attention'"
@@ -256,18 +277,24 @@ if __name__ == "__main__":
     # train the model
     # ---------------
     print("Start Training")
-    callbacks = ModelCheckpoint(
-        dirpath="./chpt", monitor="train_loss", filename="admil"
-    )
+    if args.no_validation:
+        callbacks = ModelCheckpoint(
+            dirpath="./chpt", monitor="train_loss", filename="admil"
+        )
+    else:
+        callbacks = ModelCheckpoint(
+            dirpath="./chpt", monitor="val_loss", filename="admil"
+        )
 
     trainer = pl.Trainer(
-        max_epochs=args.epochs,
+        devices=1,
         accelerator="gpu" if args.cuda else "cpu",
-        devices=1 if args.cuda else 1,
+        max_epochs=args.epochs,
         callbacks=callbacks,
         fast_dev_run=False,
     )
-    trainer.fit(model, train_loader)
+
+    trainer.fit(model, train_loader, val_loader)
 
     # test the model
     # --------------

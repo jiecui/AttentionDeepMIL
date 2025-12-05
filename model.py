@@ -164,11 +164,17 @@ class GatedAttention(nn.Module):
 class LitAttention(pl.LightningModule):
     """PyTorch Lightning wrapper for Attention model"""
 
-    def __init__(self, lr: float = 0.0005, weight_decay: float = 10e-5):
+    def __init__(
+        self,
+        lr: float = 0.0005,
+        weight_decay: float = 10e-5,
+        no_validation: bool = False,
+    ):
         super().__init__()
         self.model = Attention()
         self.lr = lr
         self.weight_decay = weight_decay
+        self.no_validation = no_validation
         self.save_hyperparameters()
 
     def forward(self, x):
@@ -181,13 +187,15 @@ class LitAttention(pl.LightningModule):
         self.log("train_loss", loss, on_step=True, on_epoch=True)
         return loss
 
-    # def validation_step(self, batch, batch_idx):
-    #     x, y = batch
-    #     bag_label = y[0]
-    #     loss, _ = self.model.calculate_objective(x, bag_label)
-    #     error, _ = self.model.calculate_classification_error(x, bag_label)
-    #     self.log("val_loss", loss, on_epoch=True)
-    #     self.log("val_error", error, on_epoch=True)
+    def validation_step(self, batch, batch_idx):
+        if self.no_validation:
+            return None
+        x, y = batch
+        bag_label = y[0]
+        loss, _ = self.model.calculate_objective(x, bag_label)
+        error, _ = self.model.calculate_classification_error(x, bag_label)
+        self.log("val_loss", loss, prog_bar=True, on_epoch=True, sync_dist=True)
+        self.log("val_error", error, prog_bar=True, on_epoch=True, sync_dist=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
@@ -209,11 +217,17 @@ class LitAttention(pl.LightningModule):
 class LitGatedAttention(pl.LightningModule):
     """PyTorch Lightning wrapper for GatedAttention model"""
 
-    def __init__(self, lr: float = 0.0005, weight_decay: float = 10e-5):
+    def __init__(
+        self,
+        lr: float = 0.0005,
+        weight_decay: float = 10e-5,
+        no_validation: bool = False,
+    ):
         super().__init__()
         self.model = GatedAttention()
         self.lr = lr
         self.weight_decay = weight_decay
+        self.no_validation = no_validation
         self.save_hyperparameters()
 
     def forward(self, x):
@@ -226,13 +240,15 @@ class LitGatedAttention(pl.LightningModule):
         self.log("train_loss", loss, on_step=True, on_epoch=True)
         return loss
 
-    # def validation_step(self, batch, batch_idx):
-    #     x, y = batch
-    #     bag_label = y[0]
-    #     loss, _ = self.model.calculate_objective(x, bag_label)
-    #     error, _ = self.model.calculate_classification_error(x, bag_label)
-    #     self.log("val_loss", loss, on_epoch=True)
-    #     self.log("val_error", error, on_epoch=True)
+    def validation_step(self, batch, batch_idx):
+        if self.no_validation:
+            return None
+        x, y = batch
+        bag_label = y[0]
+        loss, _ = self.model.calculate_objective(x, bag_label)
+        error, _ = self.model.calculate_classification_error(x, bag_label)
+        self.log("val_loss", loss, prog_bar=True, on_epoch=True, sync_dist=True)
+        self.log("val_error", error, prog_bar=True, on_epoch=True, sync_dist=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
