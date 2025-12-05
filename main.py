@@ -196,10 +196,12 @@ if __name__ == "__main__":
     # ---------------
     print("Start Training")
     if args.no_validation:
+        print("ℹ️ No validation during training")
         callbacks = ModelCheckpoint(
             dirpath="./chpt", monitor="train_loss", filename="admil"
         )
     else:
+        print("ℹ️ Validation during training")
         callbacks = ModelCheckpoint(
             dirpath="./chpt", monitor="val_loss", filename="admil"
         )
