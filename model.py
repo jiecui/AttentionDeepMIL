@@ -184,7 +184,7 @@ class LitAttention(pl.LightningModule):
         x, y = batch
         bag_label = y[0]
         loss, _ = self.model.calculate_objective(x, bag_label)
-        self.log("train_loss", loss, on_step=True, on_epoch=True)
+        self.log("train_loss", loss, on_step=True, on_epoch=True, sync_dist=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -204,6 +204,21 @@ class LitAttention(pl.LightningModule):
         error, _ = self.model.calculate_classification_error(x, bag_label)
         self.log("test_loss", loss)
         self.log("test_error", error)
+
+    def predict_step(self, batch, batch_idx):
+        data, label = batch
+        bag_label = label[0]
+        instance_labels = label[1]
+        _, predicted_label, attention_weights = self.model.forward(data)
+        bag_level = (bag_label.item(), int(predicted_label.item()))
+        instance_level = list(
+            zip(
+                instance_labels.tolist()[0],
+                attention_weights.tolist()[0],
+            )
+        )
+
+        return bag_level, instance_level
 
     def configure_optimizers(self):
         return torch.optim.Adam(
@@ -237,7 +252,7 @@ class LitGatedAttention(pl.LightningModule):
         x, y = batch
         bag_label = y[0]
         loss, _ = self.model.calculate_objective(x, bag_label)
-        self.log("train_loss", loss, on_step=True, on_epoch=True)
+        self.log("train_loss", loss, on_step=True, on_epoch=True, sync_dist=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
