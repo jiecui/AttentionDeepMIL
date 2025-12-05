@@ -1,7 +1,7 @@
 # Main script to train and test attention-based multiple instance learning models on MNIST bags
 
 # 2025 Modified by Richard J. Cui. on Thu 12/04/2025 05:40:18.272526 PM
-# $Revision: 0.1 $  $Date: Thu 12/04/2025 05:40:18.272526 PM $
+# $Revision: 0.2 $  $Date: hu 12/04/2025 23:57:25.548101 PM $
 #
 # Mayo Clinic Foundation
 # Rochester, MN 55901, USA
@@ -13,18 +13,13 @@
 # ==========================================================================
 import os
 import argparse
-import numpy as np
 import torch
 import torch.optim as optim
 import torch.utils.data as data_utils
 import pytorch_lightning as pl
-from torch.autograd import Variable
-from tqdm import tqdm
 from dataloader import MnistBags
-
-# from model import Attention, GatedAttention
 from model import LitAttention, LitGatedAttention
-from pytorch_lightning.callbacks import ModelCheckpoint, Callback
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 # ==========================================================================
 # Define hyperparameters
@@ -132,9 +127,7 @@ if __name__ == "__main__":
     # setup datasets
     # --------------
     print("Setup training and testing datasets")
-    loader_kwargs = (
-        {"num_workers": num_workers, "pin_memory": True} if args.cuda else {}
-    )
+    loader_kwargs = {"num_workers": num_workers, "pin_memory": True}
     # * data loader of training set
     train_loader = data_utils.DataLoader(
         MnistBags(
@@ -185,12 +178,8 @@ if __name__ == "__main__":
     # train the model
     # ---------------
     print("Start Training")
-    callbacks: list[Callback] = [
-        ModelCheckpoint(
-            dirpath="./chpt",
-            monitor="train_loss",
-            filename="admil",
-        )
+    callbacks = [
+        ModelCheckpoint(dirpath="./chpt", monitor="train_loss", filename="admil")
     ]
     trainer = pl.Trainer(
         max_epochs=args.epochs,
@@ -202,7 +191,7 @@ if __name__ == "__main__":
 
     # test the model
     # --------------
-    print(f"Start Testing")
+    print("Start Testing")
     # test(model, num_bags_to_display)
     trainer.test(model, test_loader)
 
