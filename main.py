@@ -208,9 +208,9 @@ if __name__ == "__main__":
         )
 
     trainer = pl.Trainer(
-        devices='auto',
+        devices="auto",
         accelerator="gpu" if args.cuda else "cpu",
-        strategy=DDPStrategy(find_unused_parameters=True),
+        strategy="auto",
         max_epochs=args.epochs,
         callbacks=callbacks,
         fast_dev_run=False,
