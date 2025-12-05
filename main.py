@@ -30,6 +30,88 @@ num_bags_to_display = 5  # number of bags to display results for during testing
 # ==========================================================================
 # Define functions
 # ==========================================================================
+# def train(
+#     model: Attention | GatedAttention, optimizer: torch.optim.Optimizer, epoch: int
+# ):
+#     model.train()
+#     train_loss = 0.0
+#     train_error = 0.0
+#     for data, label in train_loader:
+#         bag_label = label[0]
+#         if args.cuda:
+#             data, bag_label = data.cuda(), bag_label.cuda()
+#         # data, bag_label = Variable(data), Variable(bag_label)
+
+#         # reset gradients
+#         optimizer.zero_grad()
+#         # calculate loss and metrics
+#         loss, _ = model.calculate_objective(data, bag_label)
+#         train_loss += loss.data[0].item()
+#         error, _ = model.calculate_classification_error(data, bag_label)
+#         train_error += error
+#         # backward pass
+#         loss.backward()
+#         # step
+#         optimizer.step()
+
+#     # calculate loss and error for epoch
+#     train_loss /= len(train_loader)
+#     train_error /= len(train_loader)
+
+#     print(
+#         "Epoch: {}, Loss: {:.4f}, Train error: {:.4f}".format(
+#             epoch, train_loss, train_error
+#         )
+#     )
+
+
+# def test(model: Attention | GatedAttention, num_bags_to_display=5):
+#     model.eval()
+#     test_loss = 0.0
+#     test_error = 0.0
+
+#     with torch.no_grad():
+#         for batch_idx, (data, label) in enumerate(test_loader):
+#             bag_label = label[0]
+#             instance_labels = label[1]
+#             if args.cuda:
+#                 data, bag_label = data.cuda(), bag_label.cuda()
+#             data, bag_label = Variable(data), Variable(bag_label)
+#             loss, attention_weights = model.calculate_objective(data, bag_label)
+#             test_loss += loss.data[0].item()
+#             error, predicted_label = model.calculate_classification_error(
+#                 data, bag_label
+#             )
+#             test_error += error
+
+#             if (
+#                 batch_idx < num_bags_to_display
+#             ):  # plot bag labels and instance labels for first 5 bags
+#                 bag_level = (
+#                     bag_label.cpu().data.numpy()[0],
+#                     int(predicted_label.cpu().data.numpy()[0][0]),
+#                 )
+#                 instance_level = list(
+#                     zip(
+#                         instance_labels.numpy()[0].tolist(),
+#                         np.round(
+#                             attention_weights.cpu().data.numpy()[0], decimals=3
+#                         ).tolist(),
+#                     )
+#                 )
+
+#                 print(
+#                     "\nTrue Bag Label, Predicted Bag Label: {}\n"
+#                     "True Instance Labels, Attention Weights: {}".format(
+#                         bag_level, instance_level
+#                     )
+#                 )
+
+#     test_error /= len(test_loader)
+#     test_loss /= len(test_loader)
+
+#     print("\nTest Set, Loss: {:.4f}, Test error: {:.4f}".format(test_loss, test_error))
+
 if __name__ == "__main__":
     # define command-line arguments
     # -----------------------------
@@ -174,13 +256,16 @@ if __name__ == "__main__":
     # train the model
     # ---------------
     print("Start Training")
-    callback = ModelCheckpoint(dirpath="./chpt", monitor="train_loss", filename="admil")
+    callbacks = ModelCheckpoint(
+        dirpath="./chpt", monitor="train_loss", filename="admil"
+    )
 
     trainer = pl.Trainer(
         max_epochs=args.epochs,
         accelerator="gpu" if args.cuda else "cpu",
         devices=1 if args.cuda else 1,
-        callbacks=callback,
+        callbacks=callbacks,
+        fast_dev_run=False,
     )
     trainer.fit(model, train_loader)
 
