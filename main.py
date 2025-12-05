@@ -19,6 +19,7 @@ import torch.utils.data as data_utils
 import pytorch_lightning as pl
 from dataloader import MnistBags
 from model import LitAttention, LitGatedAttention
+from pytorch_lightning.strategies import DDPStrategy
 from pytorch_lightning.callbacks import ModelCheckpoint
 
 # ==========================================================================
@@ -207,8 +208,9 @@ if __name__ == "__main__":
         )
 
     trainer = pl.Trainer(
-        devices=1,
+        devices='auto',
         accelerator="gpu" if args.cuda else "cpu",
+        strategy=DDPStrategy(find_unused_parameters=True),
         max_epochs=args.epochs,
         callbacks=callbacks,
         fast_dev_run=False,
