@@ -202,8 +202,8 @@ class LitAttention(pl.LightningModule):
         bag_label = y[0]
         loss, _ = self.model.calculate_objective(x, bag_label)
         error, _ = self.model.calculate_classification_error(x, bag_label)
-        self.log("test_loss", loss)
-        self.log("test_error", error)
+        self.log("test_loss", loss, sync_dist=True)
+        self.log("test_error", error, sync_dist=True)
 
     def predict_step(self, batch, batch_idx):
         data, label = batch
@@ -270,8 +270,8 @@ class LitGatedAttention(pl.LightningModule):
         bag_label = y[0]
         loss, _ = self.model.calculate_objective(x, bag_label)
         error, _ = self.model.calculate_classification_error(x, bag_label)
-        self.log("test_loss", loss)
-        self.log("test_error", error)
+        self.log("test_loss", loss, sync_dist=True)
+        self.log("test_error", error, sync_dist=True)
 
     def predict_step(self, batch, batch_idx):
         data, label = batch
