@@ -171,10 +171,6 @@ if __name__ == "__main__":
             f"Unknown model type: {args.model}. Choose 'attention' or 'gated_attention'"
         )
 
-    optimizer = optim.Adam(
-        model.parameters(), lr=args.lr, betas=(0.9, 0.999), weight_decay=args.reg
-    )
-
     # train the model
     # ---------------
     print("Start Training")
