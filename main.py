@@ -1,7 +1,7 @@
 # Main script to train and test attention-based multiple instance learning models on MNIST bags
 
 # 2025 Modified by Richard J. Cui. on Thu 12/04/2025 05:40:18.272526 PM
-# $Revision: 0.2 $  $Date: hu 12/04/2025 23:57:25.548101 PM $
+# $Revision: 0.2 $  $Date: Fri 12/05/2025 02:55:41.021060 PM $
 #
 # Mayo Clinic Foundation
 # Rochester, MN 55901, USA
@@ -178,14 +178,13 @@ if __name__ == "__main__":
     # train the model
     # ---------------
     print("Start Training")
-    callbacks = [
-        ModelCheckpoint(dirpath="./chpt", monitor="train_loss", filename="admil")
-    ]
+    callback = ModelCheckpoint(dirpath="./chpt", monitor="train_loss", filename="admil")
+
     trainer = pl.Trainer(
         max_epochs=args.epochs,
         accelerator="gpu" if args.cuda else "cpu",
         devices=1 if args.cuda else 1,
-        callbacks=callbacks,
+        callbacks=callback,
     )
     trainer.fit(model, train_loader)
 
