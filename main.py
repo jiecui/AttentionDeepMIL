@@ -14,12 +14,10 @@
 import os
 import argparse
 import torch
-import torch.optim as optim
 import torch.utils.data as data_utils
 import pytorch_lightning as pl
 from dataloader import MnistBags
 from model import LitAttention, LitGatedAttention
-from pytorch_lightning.strategies import DDPStrategy
 from pytorch_lightning.callbacks import ModelCheckpoint
 
 # ==========================================================================
