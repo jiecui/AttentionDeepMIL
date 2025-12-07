@@ -1,7 +1,7 @@
 # Main script to train and test attention-based multiple instance learning models on MNIST bags
 
 # 2025 Modified by Richard J. Cui. on Thu 12/04/2025 05:40:18.272526 PM
-# $Revision: 0.2 $  $Date: Fri 12/05/2025 02:55:41.021060 PM $
+# $Revision: 0.3 $  $Date: Sun 12/07/2025 10:05:46.433791 AM $
 #
 # Mayo Clinic Foundation
 # Rochester, MN 55901, USA
@@ -230,10 +230,12 @@ if __name__ == "__main__":
         print(f"Displaying results for first {num_bags_to_display} bags:")
         for i in range(min(num_bags_to_display, len(prediction))):
             bag_level, instance_level = prediction[i]
-            print(f"\nBag {i+1}:")
-            print(f"  Bag-level (True Label, Predicted Label): {bag_level}")
+            print(f"\nBag {i + 1}:")
+            print(
+                f"  Bag-level (True Label, Label probability, Predicted Label): {bag_level}"
+            )
             print("  Instance-level (True Label, Attention Weight):")
             for inst in instance_level:
                 print(f"    {inst}")
 
-    # [EOF]
+# [EOF]

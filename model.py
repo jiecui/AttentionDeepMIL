@@ -1,3 +1,13 @@
+# Models for Attention-based Multiple Instance Learning
+
+# 2025 Modified by Richard J. Cui. on Thu 12/04/2025 05:40:18.272526 PM
+# $Revision: 0.3 $  $Date: Sun 12/07/2025 10:05:46.433791 AM $
+#
+# Mayo Clinic Foundation
+# Rochester, MN 55901, USA
+#
+# Email: Cui.Jie@mayo.edu
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -102,11 +112,13 @@ class GatedAttention(nn.Module):
         )
 
         self.attention_V = nn.Sequential(
-            nn.Linear(self.M, self.L), nn.Tanh()  # matrix V
+            nn.Linear(self.M, self.L),
+            nn.Tanh(),  # matrix V
         )
 
         self.attention_U = nn.Sequential(
-            nn.Linear(self.M, self.L), nn.Sigmoid()  # matrix U
+            nn.Linear(self.M, self.L),
+            nn.Sigmoid(),  # matrix U
         )
 
         self.attention_w = nn.Linear(
@@ -209,8 +221,8 @@ class LitAttention(pl.LightningModule):
         data, label = batch
         bag_label = label[0]
         instance_labels = label[1]
-        _, predicted_label, attention_weights = self.model.forward(data)
-        bag_level = (bag_label.item(), int(predicted_label.item()))
+        prob_label, predicted_label, attention_weights = self.model.forward(data)
+        bag_level = (bag_label.item(), prob_label.item(), int(predicted_label.item()))
         instance_level = list(
             zip(
                 instance_labels.tolist()[0],
@@ -277,8 +289,8 @@ class LitGatedAttention(pl.LightningModule):
         data, label = batch
         bag_label = label[0]
         instance_labels = label[1]
-        _, predicted_label, attention_weights = self.model.forward(data)
-        bag_level = (bag_label.item(), int(predicted_label.item()))
+        prob_lalbel, predicted_label, attention_weights = self.model.forward(data)
+        bag_level = (bag_label.item(), prob_lalbel.item(), int(predicted_label.item()))
         instance_level = list(
             zip(
                 instance_labels.tolist()[0],
@@ -295,3 +307,6 @@ class LitGatedAttention(pl.LightningModule):
             betas=(0.9, 0.999),
             weight_decay=self.weight_decay,
         )
+
+
+# [EOF]
