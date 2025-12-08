@@ -1,7 +1,7 @@
 # Main script to train and test attention-based multiple instance learning models on MNIST bags
 
 # 2025 Modified by Richard J. Cui. on Thu 12/04/2025 05:40:18.272526 PM
-# $Revision: 0.2 $  $Date: Fri 12/05/2025 02:55:41.021060 PM $
+# $Revision: 0.3 $  $Date: Mon 12/08/2025 06:52:29.977497 PM $
 #
 # Mayo Clinic Foundation
 # Rochester, MN 55901, USA
@@ -36,11 +36,18 @@ if __name__ == "__main__":
     # -----------------------------
     parser = argparse.ArgumentParser(description="PyTorch MNIST bags Example")
     parser.add_argument(
-        "--epochs",
+        "--max_epochs",
         type=int,
         default=20,
         metavar="N",
-        help="number of epochs to train (default: 20)",
+        help="maximum number of epochs to train (default: 20)",
+    )
+    parser.add_argument(
+        "--min_epochs",
+        type=int,
+        default=10,
+        metavar="N",
+        help="minimum number of epochs to train (default: 10)",
     )
     parser.add_argument(
         "--lr",
