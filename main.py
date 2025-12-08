@@ -1,7 +1,7 @@
 # Main script to train and test attention-based multiple instance learning models on MNIST bags
 
 # 2025 Modified by Richard J. Cui. on Thu 12/04/2025 05:40:18.272526 PM
-# $Revision: 0.3 $  $Date: Mon 12/08/2025 06:52:29.977497 PM $
+# $Revision: 0.4 $  $Date: Mon 12/08/2025 06:52:29.977497 PM $
 #
 # Mayo Clinic Foundation
 # Rochester, MN 55901, USA
@@ -18,6 +18,7 @@ import torch.utils.data as data_utils
 import pytorch_lightning as pl
 from dataloader import MnistBags
 from model import LitAttention, LitGatedAttention
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.callbacks import ModelCheckpoint
 
 # ==========================================================================
@@ -46,6 +47,13 @@ if __name__ == "__main__":
         default=10,
         metavar="N",
         help="minimum number of epochs to train (default: 10)",
+    )
+    parser.add_argument(
+        "--patience",
+        type=int,
+        default=5,
+        metavar="P",
+        help="number of epochs with no improvement after which training will be stopped (default: 5)",
     )
     parser.add_argument(
         "--lr",
@@ -203,20 +211,21 @@ if __name__ == "__main__":
     print("Start Training")
     if args.no_validation:
         print("ℹ️ No validation during training")
-        callbacks = ModelCheckpoint(
-            dirpath="./ckpt", monitor="train_loss", filename="admil"
-        )
+        monitor_metric = "train_loss"
     else:
         print("ℹ️ Validation during training")
-        callbacks = ModelCheckpoint(
-            dirpath="./ckpt", monitor="val_loss", filename="admil"
-        )
+        monitor_metric = "val_loss"
 
+    callbacks = [
+        EarlyStopping(monitor=monitor_metric, patience=args.patience),
+        ModelCheckpoint(dirpath="./ckpt", monitor=monitor_metric, filename="admil"),
+    ]
     trainer = pl.Trainer(
         devices="auto",
         accelerator="gpu" if args.cuda else "cpu",
         strategy="auto",
-        max_epochs=args.epochs,
+        min_epochs=args.min_epochs,
+        max_epochs=args.max_epochs,
         callbacks=callbacks,
         fast_dev_run=False,
     )
