@@ -248,10 +248,10 @@ if __name__ == "__main__":
             bag_level, instance_level = prediction[i]
             print(f"\nBag {i + 1}:")
             print(
-                f"  Bag-level (True Label, Label probability, Predicted Label): {bag_level}"
+                f"  Bag-level (True Label, Label probability, Predicted Label): {bag_level[0], bag_level[1]:.4f, bag_level[2]}"
             )
             print("  Instance-level (True Label, Attention Weight):")
             for inst in instance_level:
-                print(f"    {inst}")
+                print(f"    {inst[0], inst[1]:.4f}")
 
 # [EOF]
