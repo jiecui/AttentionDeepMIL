@@ -6,7 +6,9 @@ by Maximilian Ilse (<ilse.maximilian@gmail.com>), Jakub M. Tomczak (<jakubmkt@gm
 Note
 ----
 
-This fork contains updates to the original codebase to ensure compatibility with PyTorch Lightning versions 2.6 and above.
+This fork contains updates to the original codebase to ensure compatibility with PyTorch Lightning versions 2.6 and above.  Validation and early stopping features have been added to enhance model training and evaluation.
+
+In command line, type `python main.py --help` to see all available options.
 
 Overview
 --------
