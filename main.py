@@ -14,12 +14,10 @@
 import os
 import argparse
 import torch
-import torch.optim as optim
 import torch.utils.data as data_utils
 import pytorch_lightning as pl
 from dataloader import MnistBags
 from model import LitAttention, LitGatedAttention
-from pytorch_lightning.strategies import DDPStrategy
 from pytorch_lightning.callbacks import ModelCheckpoint
 
 # ==========================================================================
@@ -239,10 +237,12 @@ if __name__ == "__main__":
         print(f"Displaying results for first {num_bags_to_display} bags:")
         for i in range(min(num_bags_to_display, len(prediction))):
             bag_level, instance_level = prediction[i]
-            print(f"\nBag {i+1}:")
-            print(f"  Bag-level (True Label, Predicted Label): {bag_level}")
+            print(f"\nBag {i + 1}:")
+            print(
+                f"  Bag-level (True Label, Label probability, Predicted Label): {bag_level}"
+            )
             print("  Instance-level (True Label, Attention Weight):")
             for inst in instance_level:
                 print(f"    {inst}")
 
-    # [EOF]
+# [EOF]
