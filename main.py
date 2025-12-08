@@ -38,14 +38,14 @@ if __name__ == "__main__":
         "--max_epochs",
         type=int,
         default=20,
-        metavar="N",
+        metavar="maxN",
         help="maximum number of epochs to train (default: 20)",
     )
     parser.add_argument(
         "--min_epochs",
         type=int,
         default=10,
-        metavar="N",
+        metavar="minN",
         help="minimum number of epochs to train (default: 10)",
     )
     parser.add_argument(
